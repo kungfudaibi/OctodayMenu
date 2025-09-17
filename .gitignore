@@ -1,0 +1,76 @@
+# UniApp Generated
+/unpackage/
+/node_modules/
+/dist/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Local configuration files
+manifest.local.json
+uni.local.js
+
+# debug files
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# HBuilderX
+.hbuilderx/
+
+# uniCloud
+/uniCloud-aliyun/functions/*/node_modules/
+/uniCloud-aliyun/database/
+local.*.js
+cloudfunction_init.js
+
+# Private configuration
+*.private.*
+private.config.json
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+.tmp/
+
+# Build output
+/wx/
+/h5/
+/app/
+/mp-weixin/
+/mp-alipay/
+/mp-baidu/
+/mp-toutiao/
+/mp-qq/
+
+# Coverage directory
+/coverage/
+
+# Local env files
+.env.local
+.env.*.local
+
+# Log files
+logs/
+*.log
