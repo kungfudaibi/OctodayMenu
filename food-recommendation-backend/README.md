@@ -1,25 +1,3 @@
-<<<<<<< HEAD
-# 第八日菜单 OctodayMenu
-
-今天吃什么？食堂这么多选择，总得有个头啊……
-
-**山西大学开源协会项目**
-
-你是否想过，用一款网页端应用就能轻松解决今晚吃什么的难题？
-
-那么，今天就由我们来开发一个这样的应用吧！
-
-
-> WARNING 该项目仍处于开发中
-
-## 开发流程
-
-详见 [开发流程](https://www.yuque.com/jinyiels/octoday_menu/yg5peag1vymvximk/)
-
-## 点子投放
-
-可以在[表单](https://github.com/SXU-Opensource-Association/OctodayMenu/issues)中提交。
-=======
 # 食物推荐系统API文档设计
 
 ## 快速开始
@@ -944,4 +922,3 @@ node test_ai.js
 3. 如果数据库字段不匹配，会记录警告但不中断流程
 4. 图片文件会保存在 `uploads/`目录
 5. AI识别结果会保存在图片目录的 `data/`子目录中
->>>>>>> a5c2d66 (chore: initial commit - add project files)
