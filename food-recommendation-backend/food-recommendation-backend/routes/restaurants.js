@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
     }
 
     const restaurantsQuery = `
-      SELECT id, name, window_number, image_url
+      SELECT id, name, window_number, image_url, average_rating, rating_count, dish_count
       FROM restaurants
       ${whereClause}
       ORDER BY ${orderBy}
@@ -80,14 +80,17 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
 
     const restaurantQuery = `
-      SELECT r.*, COALESCE(json_agg(
+      SELECT r.*, json_agg(
         json_build_object(
           'id', d.id,
           'name', d.name,
           'price', d.price,
-          'image_url', d.image_url
+          'image_url', d.image_url,
+          'average_rating', d.average_rating,
+          'rating_count', d.rating_count,
+          'flavor_profile', d.flavor_profile
         )
-      ) FILTER (WHERE d.id IS NOT NULL), '[]') as dishes
+      ) as dishes
       FROM restaurants r
       LEFT JOIN dishes d ON r.id = d.restaurant_id
       WHERE r.id = $1
@@ -107,19 +110,6 @@ router.get('/:id', async (req, res) => {
     }
 
     const restaurant = result.rows[0];
-
-    // 确保 dishes 是数组（pg 有时会返回 JSON 字符串）
-    try {
-      if (restaurant.dishes && typeof restaurant.dishes === 'string') {
-        restaurant.dishes = JSON.parse(restaurant.dishes);
-      }
-      if (!Array.isArray(restaurant.dishes)) {
-        restaurant.dishes = [];
-      }
-    } catch (e) {
-      console.error('Failed to parse dishes JSON:', e);
-      restaurant.dishes = [];
-    }
 
     res.json({
       success: true,

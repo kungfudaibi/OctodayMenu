@@ -20,7 +20,7 @@ router.post('/history', auth, async (req, res) => {
     }
 
     const result = await query(
-      `INSERT INTO user_dish_history (user_id, dish_id, restaurant_id, rating, notes)
+      `INSERT INTO user_history (user_id, dish_id, restaurant_id, rating, notes)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
       [req.user.id, dish_id, restaurant_id, rating, notes]
@@ -63,7 +63,7 @@ router.get('/history', auth, async (req, res) => {
                'name', r.name,
                'window_number', r.window_number
              ) as restaurant
-      FROM user_dish_history h
+      FROM user_history h
       JOIN dishes d ON h.dish_id = d.id
       JOIN restaurants r ON h.restaurant_id = r.id
       WHERE h.user_id = $1
@@ -73,7 +73,7 @@ router.get('/history', auth, async (req, res) => {
 
     const countQuery = `
       SELECT COUNT(*) as total
-      FROM user_dish_history
+      FROM user_history
       WHERE user_id = $1
     `;
 
@@ -177,7 +177,8 @@ router.get('/favorites', auth, async (req, res) => {
                'id', d.id,
                'name', d.name,
                'price', d.price,
-               'image_url', d.image_url
+               'image_url', d.image_url,
+               'average_rating', d.average_rating
              ) as dish,
              json_build_object(
                'id', r.id,
@@ -188,7 +189,7 @@ router.get('/favorites', auth, async (req, res) => {
       JOIN dishes d ON f.dish_id = d.id
       JOIN restaurants r ON f.restaurant_id = r.id
       WHERE f.user_id = $1
-      ORDER BY f.added_at DESC
+      ORDER BY f.created_at DESC
       LIMIT $2 OFFSET $3
     `;
 

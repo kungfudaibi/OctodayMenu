@@ -1,0 +1,43 @@
+{
+  "id": "chatcmpl-19185da8-2f03-47f7-9237-b29807d8aa30",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "{\n  \"店名\": \"丑娘舅螺蛳粉\",\n  \"菜品\": [\n    {\n      \"名称\": \"招牌原味螺蛳粉\",\n      \"价格\": 9\n    },\n    {\n      \"名称\": \"五香豆干螺蛳粉\",\n      \"价格\": 10\n    },\n    {\n      \"名称\": \"极品卤蛋螺蛳粉\",\n      \"价格\": 10\n    },\n    {\n      \"名称\": \"撒尿肉丸螺蛳粉\",\n      \"价格\": 11.5\n    },\n    {\n      \"名称\": \"特色鱼丸螺蛳粉\",\n      \"价格\": 11.5\n    },\n    {\n      \"名称\": \"广式香肠螺蛳粉\",\n      \"价格\": 12\n    },\n    {\n      \"名称\": \"炸鸡蛋螺蛳粉\",\n      \"价格\": 12\n    },\n    {\n      \"名称\": \"干捞螺蛳粉\",\n      \"价格\": 13\n    },\n    {\n      \"名称\": \"招牌酱拌粉\",\n      \"价格\": 10\n    },\n    {\n      \"名称\": \"茄汁酱拌粉\",\n      \"价格\": 10\n    },\n    {\n      \"名称\": \"椒麻鸡酱拌粉\",\n      \"价格\": 10\n    },\n    {\n      \"名称\": \"黑鸭酱拌粉\",\n      \"价格\": 11\n    },\n    {\n      \"名称\": \"蟹黄酱拌粉\",\n      \"价格\": 11\n    },\n    {\n      \"名称\": \"招牌螺蛳粉+葱花饼\",\n      \"价格\": 11.5\n    },\n    {\n      \"名称\": \"炸蛋螺蛳粉+葱花饼\",\n      \"价格\": 14.5\n    },\n    {\n      \"名称\": \"豆干\",\n      \"价格\": 1\n    },\n    {\n      \"名称\": \"腐竹\",\n      \"价格\": 1\n    },\n    {\n      \"名称\": \"肉丸\",\n      \"价格\": 2.5\n    },\n    {\n      \"名称\": \"炸鸡蛋\",\n      \"价格\": 3\n    },\n    {\n      \"名称\": \"卤蛋\",\n      \"价格\": 1\n    },\n    {\n      \"名称\": \"鱼丸\",\n      \"价格\": 2.5\n    },\n    {\n      \"名称\": \"腊肠\",\n      \"价格\": 3\n    },\n    {\n      \"名称\": \"响铃卷\",\n      \"价格\": 3\n    }\n  ]\n}",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning_content": ""
+      }
+    }
+  ],
+  "created": 1764297414,
+  "model": "qwen3-vl-plus",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 548,
+    "prompt_tokens": 1860,
+    "total_tokens": 2408,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": null,
+      "reasoning_tokens": null,
+      "rejected_prediction_tokens": null,
+      "text_tokens": 548
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": null,
+      "image_tokens": 1838,
+      "text_tokens": 22
+    }
+  }
+}

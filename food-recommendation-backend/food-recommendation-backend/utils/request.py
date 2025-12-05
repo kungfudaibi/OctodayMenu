@@ -68,7 +68,7 @@ def main():
     print("已准备好请求，正在发送...")
     try:
         completion = client.chat.completions.create(
-            model="qwen3-vl-plus",
+            model="qwen-vl-max-2025-04-08",
             messages=[{"role": "user", "content": messages}],
         )
         

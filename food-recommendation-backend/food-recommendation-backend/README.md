@@ -1,61 +1,36 @@
-<<<<<<< HEAD
-# 第八日菜单 OctodayMenu
-
-今天吃什么？食堂这么多选择，总得有个头啊……
-
-**山西大学开源协会项目**
-
-你是否想过，用一款网页端应用就能轻松解决今晚吃什么的难题？
-
-那么，今天就由我们来开发一个这样的应用吧！
-
-
-> WARNING 该项目仍处于开发中
-
-## 开发流程
-
-详见 [开发流程](https://www.yuque.com/jinyiels/octoday_menu/yg5peag1vymvximk/)
-
-## 点子投放
-
-可以在[表单](https://github.com/SXU-Opensource-Association/OctodayMenu/issues)中提交。
-=======
 # 食物推荐系统API文档设计
+
+基于您的需求，我将设计一套完整的API接口规范，支持微信/QQ/邮箱登录、图片上传识别和随机推荐功能。
 
 ## 快速开始
 
 ### 环境要求
-
 - Node.js >= 14.0.0
 - PostgreSQL >= 12.0
 
 ### 安装步骤
 
 1. **克隆项目并安装依赖**
-
 ```bash
 npm install
 ```
 
 2. **环境配置**
-
 ```bash
 cp .env.example .env
 # 编辑 .env 文件，配置数据库和API密钥
 ```
 
 3. **数据库设置**
-
 ```bash
 # 创建PostgreSQL数据库
 createdb food_recommendation
 
 # 运行数据库迁移
-psql -d food_recommendation -f migrations/create_tabels.sql
+psql -d food_recommendation -f migrations/001_initial_schema.sql
 ```
 
 4. **启动服务器**
-
 ```bash
 npm start
 # 或者开发模式
@@ -67,69 +42,9 @@ npm run dev
 ### 测试API
 
 健康检查端点：
-
 ```bash
 curl http://localhost:4444/health
 ```
-
-### 自动化 API 测试（仓库内）
-
-项目包含一个自动化测试脚本，用于对主要 API 端点进行检查并把结果保存到 `results/api_test_outputs/summary.json`。
-
-- 脚本路径：`scripts/run_api_tests.sh`
-- 使用方法（在项目根目录）：
-
-```bash
-# 在服务已运行的情况下运行（默认使用 PORT=4444）
-PORT=4444 ./scripts/run_api_tests.sh
-```
-
-- 输出文件：`results/api_test_outputs/summary.json`
-- 脚本会注册一个临时测试用户、登录获取 JWT、调用一组关键端点并保存响应，便于回归测试和 CI 集成。
-
-### 最近一次测试（摘要）
-
-基于仓库中运行的自动化测试脚本（输出文件：`results/api_test_outputs/summary.json`），下为每个主要 API 的最新快照：
-
-- **GET /health** — 状态: 200 OK
-  - 示例文件：`results/api_test_outputs/health.json`
-
-- **POST /auth/register** — 状态: 201 Created (测试用户已注册)
-  - 示例文件：`results/api_test_outputs/register.json`
-
-- **POST /auth/login** — 状态: 200 OK (返回 JWT)
-  - 示例文件：`results/api_test_outputs/login.json`
-
-- **GET /restaurants** — 状态: 200 OK（分页列表，示例包含 `average_rating` / `rating_count` / `dish_count` 字段）
-  - 示例文件：`results/api_test_outputs/restaurants_list.json`
-
-- **GET /restaurants/{id}** — 状态: 200 OK（返回餐厅详情与 `dishes` 数组）
-  - 示例文件：`results/api_test_outputs/restaurant_1.json`
-
-- **GET /dishes/{id}** — 状态: 200 OK（返回菜品详情）
-  - 示例文件：`results/api_test_outputs/dish_1.json`
-
-- **GET /recommendations/random** — 状态: 200 OK（返回若干推荐项）
-  - 示例文件：`results/api_test_outputs/recommendations_random.json`
-
-- **GET /recommendations/flavor-based** — 状态: 200 OK（若无用户偏好会返回空数组）
-  - 示例文件：`results/api_test_outputs/recommendations_flavor.json`
-
-- **GET /user/history** — 状态: 200 OK（测试环境返回空历史）
-  - 示例文件：`results/api_test_outputs/user_history.json`
-
-- **GET /user/favorites** — 状态: 200 OK（测试环境返回空数组；历史上曾因 DB 字段命名导致 500，已修复）
-  - 示例文件：`results/api_test_outputs/user_favorites.json`
-
-- **POST /api/upload/menu (无文件)** — 状态: 401 AUTH_REQUIRED（需要认证）
-  - 示例文件：`results/api_test_outputs/upload_no_file.json`
-
-说明与建议：
-
-- 测试脚本位于：`scripts/run_api_tests.sh`，它会依次注册并登录一个临时用户（获取 JWT），然后调用上述端点并将响应保存到 `results/api_test_outputs/` 目录下；你可以直接查看这些 JSON 文件以获取每个端点的原始响应。
-- 如果你在部署到新数据库或 CI 环境遇到 500 错误，请先确认数据库 schema 是否包含代码期望的列（例如 `average_rating`、`rating_count`、`dish_count` 等），或者在代码中添加 null-safe 处理。仓库迁移文件：`migrations/create_tabels.sql`。
-- 最近我们移除了临时向客户端暴露错误堆栈的调试改动，错误现在通过统一错误处理中间件以标准格式返回并记录到服务器日志。
-
 
 ## API基础信息
 
@@ -139,89 +54,91 @@ PORT=4444 ./scripts/run_api_tests.sh
 
 ## 认证相关接口
 
-下面是基于仓库自动化测试输出（`results/api_test_outputs/`）整理的真实请求路径和示例响应：
-
 ### 1. 微信登录/注册
 
-```text
-POST /login/wechat
+```http
+POST /auth/wechat
+Content-Type: application/json
+
+{
+  "code": "微信登录code"
+}
 ```
 
-- 说明：该登录方式存在于代码中，但未被自动化测试覆盖（需要微信 appid/配置进行集成测试）。
+响应:
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": 123,
+      "nickname": "用户昵称",
+      "avatar": "头像URL"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
 
 ### 2. QQ登录/注册
 
-- 说明：同微信，代码中可能有支持点位，自动化测试未覆盖，保留为 TODO。
-
-### 3. 邮箱注册（实际接口）
-
 ```http
-POST /auth/register
+POST /auth/qq
 Content-Type: application/json
 
 {
-  "email": "test+1764898357@example.com",
-  "password": "your_password",
-  "nickname": "testuser1764898357"
+  "access_token": "QQ access token",
+  "openid": "QQ openid"
 }
 ```
 
-示例响应（来自 `results/api_test_outputs/register.json`）：
+响应格式同微信登录。
+
+### 3. 邮箱注册
+
+```http
+POST /auth/register/email
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "nickname": "用户昵称"
+}
+```
+
+响应:
 
 ```json
 {
   "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "user": {
-      "id": 13,
-      "email": "test+1764898357@example.com",
-      "username": "testuser1764898357"
-    },
-    "token": "<jwt_token>"
-  }
+  "message": "注册成功，请查收验证邮件",
+  "data": null
 }
 ```
 
-### 4. 邮箱登录（实际接口）
+### 4. 邮箱登录
 
 ```http
-POST /auth/login
+POST /auth/login/email
 Content-Type: application/json
 
 {
-  "email": "test+1764898357@example.com",
-  "password": "your_password"
+  "email": "user@example.com",
+  "password": "password123"
 }
 ```
 
-示例响应（来自 `results/api_test_outputs/login.json`）：
-
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "user": {
-      "id": 13,
-      "email": "test+1764898357@example.com",
-      "nickname": "testuser1764898357",
-      "avatar": null
-    },
-    "token": "<jwt_token>"
-  }
-}
-```
-
-> 注意：示例中的 `token` 值为测试时返回的 JWT；真实环境请妥善保存和使用 `Authorization: Bearer <token>`。
+响应格式同微信登录。
 
 ### 5. 邮箱验证
 
 ```http
-GET /auth/verify-email?token=<verification_token>
+GET /auth/verify-email?token=验证令牌
 ```
 
-示例响应（行为通用说明）：
+响应:
 
 ```json
 {
@@ -230,8 +147,6 @@ GET /auth/verify-email?token=<verification_token>
 }
 ```
 
-（如果你的部署没有此流程，验证链接或邮件发送可能未实现）
-
 ### 6. 获取当前用户信息
 
 ```http
@@ -239,7 +154,7 @@ GET /auth/me
 Authorization: Bearer <token>
 ```
 
-响应示例（通用字段）：
+响应:
 
 ```json
 {
@@ -255,12 +170,12 @@ Authorization: Bearer <token>
       "salty": 4,
       "sour": 1,
       "bitter": 0
-    }
+    },
+    "dietary_restrictions": ["素食"],
+    "allergies": ["花生"]
   }
 }
 ```
-
-。
 
 ## 图片上传与识别接口
 
@@ -942,6 +857,5 @@ node test_ai.js
 1. 确保Python环境已安装所需依赖
 2. AI识别结果会自动保存到数据库
 3. 如果数据库字段不匹配，会记录警告但不中断流程
-4. 图片文件会保存在 `uploads/`目录
-5. AI识别结果会保存在图片目录的 `data/`子目录中
->>>>>>> a5c2d66 (chore: initial commit - add project files)
+4. 图片文件会保存在`uploads/`目录
+5. AI识别结果会保存在图片目录的`data/`子目录中
