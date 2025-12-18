@@ -96,6 +96,38 @@ curl_get() {
   fi
 }
 
+# Convenience function for auth requests
+curl_authed() {
+  local method=$1
+  local url=$2
+  local data=$3
+  local out=$4
+  local type=${5:-"json"}
+
+  local auth_header_part=()
+  if [ -n "$TOKEN" ]; then
+    auth_header_part=("-H" "Authorization: Bearer $TOKEN")
+  fi
+
+  if [[ "$type" == "multipart" ]]; then
+    # For multipart, `data` is a string containing one or more `-F` parts.
+    # Avoid eval; let word-splitting handle `-F` tokens safely.
+    curl -sS -D - -X "$method" \
+      "${auth_header_part[@]}" \
+      $data \
+      "$url" \
+      -o "$out" || true
+  else
+    # Default to application/json
+    curl -sS -D - -X "$method" \
+      "${auth_header_part[@]}" \
+      -H "Content-Type: application/json" \
+      -d "$data" \
+      "$url" \
+      -o "$out" || true
+  fi
+}
+
 # Public endpoints
 echo "Fetching restaurants list"
 curl_get "$API_BASE/restaurants?page=1&limit=5" "$OUT_DIR/restaurants_list.json"
@@ -122,7 +154,29 @@ curl_get "$API_BASE/user/favorites?page=1&limit=10" "$OUT_DIR/user_favorites.jso
 
 # Try upload endpoint without file (expect validation error)
 echo "Calling upload endpoint without file to see error"
-(do_curl "POST" "$API_BASE/upload/menu" '{}' "$OUT_DIR/upload_no_file.json")
+# Send only form fields without an image to trigger structured NO_FILE error
+# Capture headers to a file (not stdout) to avoid noisy console output
+UPLOAD_NO_FILE_HEADERS="$OUT_DIR/upload_no_file.headers.txt"
+AUTH_ARGS=()
+if [ -n "$TOKEN" ]; then AUTH_ARGS=("-H" "Authorization: Bearer $TOKEN"); fi
+curl -sS -D "$UPLOAD_NO_FILE_HEADERS" -X POST \
+  "${AUTH_ARGS[@]}" \
+  -F restaurant_id=1 \
+  "$API_BASE/upload/menu" \
+  -o "$OUT_DIR/upload_no_file.json" || true
+
+# Print a concise summary for this specific check
+python3 - <<PYCODE
+import json,sys
+from pathlib import Path
+f=Path(r"$OUT_DIR/upload_no_file.json")
+try:
+    d=json.loads(f.read_text())
+    ok=d.get('success') is False and d.get('error',{}).get('code')=='NO_FILE'
+    print('upload_no_file:', 'OK' if ok else 'Unexpected response', d)
+except Exception as e:
+    print('upload_no_file: Failed to parse JSON:', e)
+PYCODE
 
 # Aggregate a simple summary file
 python3 - <<PYCODE

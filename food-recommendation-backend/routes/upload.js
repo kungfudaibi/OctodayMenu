@@ -11,6 +11,16 @@ const router = express.Router();
 // 上传菜单图片
 router.post('/menu', auth, upload.single('image'), async (req, res) => {
   try {
+    if (req.fileValidationError) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_FILE',
+          message: req.fileValidationError
+        }
+      });
+    }
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -26,16 +36,25 @@ router.post('/menu', auth, upload.single('image'), async (req, res) => {
     
     // 生成唯一上传ID
     const uploadId = 'upload_' + Date.now();
+
+    // 预先写入上传记录，便于查询任务状态
+    await query(
+      `INSERT INTO upload_results (upload_id, user_id, image_path, status)
+       VALUES ($1, $2, $3, $4)`,
+      [uploadId, req.user.id, imagePath, 'processing']
+    );
     
     // 异步调用阿里云AI识别
     recognizeMenu(imagePath, uploadId, restaurant_id, window_number)
       .then(async (result) => {
         // 保存识别结果到数据库
         await query(
-          `INSERT INTO upload_results 
-           (upload_id, user_id, image_path, status, result_data) 
-           VALUES ($1, $2, $3, $4, $5)`,
-          [uploadId, req.user.id, imagePath, 'completed', JSON.stringify(result)]
+          `UPDATE upload_results
+           SET status = $1,
+               result_data = $2::jsonb,
+               error_message = NULL
+           WHERE upload_id = $3 AND user_id = $4`,
+          ['completed', JSON.stringify(result), uploadId, req.user.id]
         );
       })
       .catch(async (error) => {
@@ -43,10 +62,11 @@ router.post('/menu', auth, upload.single('image'), async (req, res) => {
         
         // 保存错误状态到数据库
         await query(
-          `INSERT INTO upload_results 
-           (upload_id, user_id, image_path, status, error_message) 
-           VALUES ($1, $2, $3, $4, $5)`,
-          [uploadId, req.user.id, imagePath, 'failed', error.message]
+          `UPDATE upload_results
+           SET status = $1,
+               error_message = $2
+           WHERE upload_id = $3 AND user_id = $4`,
+          ['failed', error.message || 'Recognition failed', uploadId, req.user.id]
         );
       });
     

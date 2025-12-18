@@ -21,11 +21,13 @@ const storage = multer.diskStorage({
 
 // 文件过滤器
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed'), false);
+  // Gracefully reject non-image uploads so the route can surface a useful error
+  if (!file || !file.mimetype || !file.mimetype.startsWith('image/')) {
+    req.fileValidationError = 'Only image files are allowed';
+    return cb(null, false);
   }
+
+  cb(null, true);
 };
 
 const upload = multer({

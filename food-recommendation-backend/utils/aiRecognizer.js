@@ -194,72 +194,31 @@ const saveRecognitionResults = async (recognitionResult, uploadId) => {
     }
 
     // 插入菜品
-    const dishInserts = recognitionResult.dishes.map(dish => ({
-      restaurant_id: restaurantId,
-      name: dish.name,
-      price: dish.price,
-      original_price_text: dish.original_price_text || '',
-      min_price: dish.min_price || dish.price,
-      max_price: dish.max_price || dish.price,
-      confidence: dish.confidence || 0.8
-    }));
+    if (restaurantId && Array.isArray(recognitionResult.dishes)) {
+      for (const dish of recognitionResult.dishes) {
+        const dishName = dish.name || '未知菜品';
+        const parsedPrice = Number.parseFloat(dish.price);
+        const normalizedPrice = Number.isFinite(parsedPrice) ? parsedPrice : 0;
 
-    if (dishInserts.length > 0 && restaurantId) {
-      try {
-        const dishValues = dishInserts.map((_, index) =>
-          `($${index * 6 + 1}, $${index * 6 + 2}, $${index * 6 + 3}, $${index * 6 + 4}, $${index * 6 + 5}, $${index * 6 + 6})`
-        ).join(', ');
+        try {
+          const updateResult = await client.query(
+            `UPDATE dishes
+             SET price = $3,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE restaurant_id = $1 AND name = $2`,
+            [restaurantId, dishName, normalizedPrice]
+          );
 
-        const dishParams = dishInserts.flatMap(dish => [
-          dish.restaurant_id,
-          dish.name,
-          dish.price,
-          dish.original_price_text,
-          dish.min_price,
-          dish.max_price,
-          dish.confidence
-        ]);
-
-        await client.query(
-          `INSERT INTO dishes (restaurant_id, name, price, original_price_text, min_price, max_price, confidence)
-           VALUES ${dishValues}
-           ON CONFLICT (restaurant_id, name) DO UPDATE SET
-             price = EXCLUDED.price,
-             original_price_text = EXCLUDED.original_price_text,
-             min_price = EXCLUDED.min_price,
-             max_price = EXCLUDED.max_price,
-             confidence = EXCLUDED.confidence,
-             updated_at = CURRENT_TIMESTAMP`,
-          dishParams
-        );
-      } catch (error) {
-        console.warn('Failed to insert dishes:', error.message);
-        // 尝试不使用ON CONFLICT
-        for (const dish of dishInserts) {
-          try {
+          if (updateResult.rowCount === 0) {
             await client.query(
-              `INSERT INTO dishes (restaurant_id, name, price, original_price_text, min_price, max_price, confidence)
-               VALUES ($1, $2, $3, $4, $5, $6)`,
-              [dish.restaurant_id, dish.name, dish.price, dish.original_price_text, dish.min_price, dish.max_price, dish.confidence]
+              `INSERT INTO dishes (restaurant_id, name, price)
+               VALUES ($1, $2, $3)`,
+              [restaurantId, dishName, normalizedPrice]
             );
-          } catch (insertError) {
-            console.warn(`Failed to insert dish ${dish.name}:`, insertError.message);
           }
+        } catch (error) {
+          console.warn(`Failed to upsert dish ${dishName}:`, error.message);
         }
-      }
-    }
-
-    // 更新upload_results表中的餐厅ID
-    if (restaurantId) {
-      try {
-        await client.query(
-          `UPDATE upload_results
-           SET result_data = jsonb_set(result_data, '{restaurant,id}', $1::text::jsonb)
-           WHERE upload_id = $2`,
-          [restaurantId.toString(), uploadId]
-        );
-      } catch (error) {
-        console.warn('Failed to update upload_results:', error.message);
       }
     }
 
