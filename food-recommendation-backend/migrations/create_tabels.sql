@@ -260,7 +260,9 @@ INSERT INTO dish_categories (name, description) VALUES
 ('小吃', '零食、小点心等'),
 ('饮品', '各种饮料、茶水等');
 
-
+ALTER TABLE dishes
+ADD COLUMN average_rating DECIMAL(3,2) DEFAULT 0,
+ADD COLUMN rating_count INTEGER DEFAULT 0;
 
 
 -- 输出完成信息
